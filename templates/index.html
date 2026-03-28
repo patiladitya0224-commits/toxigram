@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Feed{% endblock %}
+{% block content %}
+
+<div class="feed-layout">
+  <!-- ── FEED ── -->
+  <div class="feed-column">
+
+    {% if not posts_data %}
+    <div class="empty-state">
+      <div class="empty-icon">📸</div>
+      <h3>No posts yet!</h3>
+      <p>Be the first to share something.</p>
+      <a href="{{ url_for('create_post') }}" class="btn-primary">Create Post</a>
+    </div>
+    {% endif %}
+
+    {% for item in posts_data %}
+    {% set post = item.post %}
+    {% set liked = item.liked %}
+    {% set trend = item.sentiment_trend %}
+    <article class="post-card" id="post-{{ post.id }}">
+
+      <!-- Post Header -->
+      <div class="post-header">
+        <a href="{{ url_for('profile', username=post.author.username) }}" class="post-author">
+          <div class="avatar-md">{{ post.author.username[0].upper() }}</div>
+          <div>
+            <div class="author-name">{{ post.author.username }}</div>
+            <div class="post-time">{{ post.created_at.strftime('%b %d, %Y · %I:%M %p') }}</div>
+          </div>
+        </a>
+        {% if post.author.id == current_user.id %}
+        <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" style="margin-left:auto">
+          <button type="submit" class="btn-ghost btn-sm" onclick="return confirm('Delete this post?')">🗑</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <!-- Post Image -->
+      {% if post.image %}
+      <div class="post-image-wrap">
+        <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="Post" class="post-image" loading="lazy"/>
+      </div>
+      {% endif %}
+
+      <!-- Caption -->
+      <div class="post-caption">{{ post.caption }}</div>
+
+      <!-- Actions -->
+      <div class="post-actions">
+        <button class="like-btn {% if liked %}liked{% endif %}" data-post-id="{{ post.id }}">
+          <span class="heart-icon">{% if liked %}❤️{% else %}🤍{% endif %}</span>
+          <span class="like-count" id="like-count-{{ post.id }}">{{ post.like_count }}</span>
+        </button>
+        <button class="comment-toggle-btn" data-post-id="{{ post.id }}">
+          💬 <span>{{ post.comment_count }}</span>
+        </button>
+        <div class="sentiment-badge" style="margin-left: auto;">
+          {{ trend.overall }}
+        </div>
+      </div>
+
+      <!-- Sentiment Bar -->
+      {% if post.comments %}
+      <div class="sentiment-bars">
+        <div class="sbar-row">
+          <span class="sbar-label">😊</span>
+          <div class="sbar-track"><div class="sbar-fill sbar-pos" style="width:{{ trend.positive }}%"></div></div>
+          <span class="sbar-pct">{{ trend.positive }}%</span>
+        </div>
+        <div class="sbar-row">
+          <span class="sbar-label">😐</span>
+          <div class="sbar-track"><div class="sbar-fill sbar-neu" style="width:{{ trend.neutral }}%"></div></div>
+          <span class="sbar-pct">{{ trend.neutral }}%</span>
+        </div>
+        <div class="sbar-row">
+          <span class="sbar-label">😞</span>
+          <div class="sbar-track"><div class="sbar-fill sbar-neg" style="width:{{ trend.negative }}%"></div></div>
+          <span class="sbar-pct">{{ trend.negative }}%</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Comments Section -->
+      <div class="comments-section" id="comments-{{ post.id }}">
+        {% for comment in post.comments %}
+        <div class="comment-item">
+          <div class="comment-header">
+            <a href="{{ url_for('profile', username=comment.author.username) }}" class="comment-author">
+              <div class="avatar-xs">{{ comment.author.username[0].upper() }}</div>
+              <span>{{ comment.author.username }}</span>
+            </a>
+            <span class="comment-time">{{ comment.created_at.strftime('%b %d') }}</span>
+          </div>
+
+          <!-- Toxicity Badge -->
+          <div class="tox-badge-row">
+            <span class="tox-badge tox-{{ comment.toxicity_score | round(1) | string | replace('.','') }}
+              {% if comment.toxicity_score < 0.2 %}tox-clean
+              {% elif comment.toxicity_score < 0.4 %}tox-mild
+              {% elif comment.toxicity_score < 0.6 %}tox-moderate
+              {% elif comment.toxicity_score < 0.8 %}tox-toxic
+              {% else %}tox-extreme{% endif %}">
+              {{ comment.toxicity_label }}
+            </span>
+            <span class="sentiment-text">{{ comment.sentiment }}</span>
+          </div>
+
+          <!-- Toxicity Bar -->
+          <div class="tox-bar-wrap" title="Toxicity: {{ (comment.toxicity_score * 100)|int }}%">
+            <div class="tox-bar-track">
+              <div class="tox-bar-fill" style="width: {{ (comment.toxicity_score * 100)|int }}%;
+                background: {% if comment.toxicity_score < 0.2 %}#22c55e
+                {% elif comment.toxicity_score < 0.4 %}#eab308
+                {% elif comment.toxicity_score < 0.6 %}#f97316
+                {% elif comment.toxicity_score < 0.8 %}#ef4444
+                {% else %}#7f1d1d{% endif %};">
+              </div>
+            </div>
+            <span class="tox-pct">{{ (comment.toxicity_score * 100)|int }}%</span>
+          </div>
+
+          <!-- Comment text (neutralized) -->
+          <p class="comment-text">{{ comment.neutralized_text }}</p>
+
+          <!-- Was modified notice -->
+          {% if comment.was_modified %}
+          <div class="modified-notice">
+            <span>🔄 Comment was neutralized by NLP</span>
+            {% set reps = comment.get_replacements() %}
+            {% if reps %}
+            <div class="replacements-list">
+              {% for r in reps %}
+              <span class="replacement-chip">
+                <s>{{ r.original }}</s> → <strong>{{ r.replacement }}</strong>
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+        </div>
+        {% endfor %}
+
+        <!-- Add Comment Form -->
+        <form method="POST" action="{{ url_for('add_comment', post_id=post.id) }}" class="comment-form">
+          <div class="comment-input-wrap">
+            <div class="avatar-xs">{{ current_user.username[0].upper() }}</div>
+            <div class="comment-input-area">
+              <textarea name="comment" placeholder="Write a comment…" rows="1"
+                class="comment-input" id="comment-input-{{ post.id }}"
+                oninput="liveAnalyze(this, '{{ post.id }}')"></textarea>
+
+              <!-- Live toxicity meter (shown as user types) -->
+              <div class="live-tox-meter" id="live-meter-{{ post.id }}" style="display:none">
+                <div class="live-tox-bar-track">
+                  <div class="live-tox-bar-fill" id="live-bar-{{ post.id }}"></div>
+                </div>
+                <span class="live-tox-label" id="live-label-{{ post.id }}"></span>
+              </div>
+            </div>
+          </div>
+          <div class="comment-form-footer">
+            <button type="submit" class="btn-comment">Post</button>
+          </div>
+        </form>
+
+      </div><!-- /comments-section -->
+
+    </article>
+    {% endfor %}
+
+  </div><!-- /feed-column -->
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar-column">
+    <div class="sidebar-card">
+      <div class="sidebar-user">
+        <div class="avatar-lg">{{ current_user.username[0].upper() }}</div>
+        <div>
+          <div class="sidebar-username">{{ current_user.username }}</div>
+          <a href="{{ url_for('profile', username=current_user.username) }}" class="sidebar-link">View profile</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <h4 class="sidebar-title">🧠 NLP Features</h4>
+      <ul class="feature-list">
+        <li>✅ Real-time toxicity scoring</li>
+        <li>🔄 Auto word neutralization</li>
+        <li>😊 Sentiment analysis</li>
+        <li>📊 Comment trend bars</li>
+        <li>🔶 Toxicity level badges</li>
+        <li>🚨 Extremity detection</li>
+      </ul>
+    </div>
+
+    <div class="sidebar-card">
+      <h4 class="sidebar-title">📊 Toxicity Scale</h4>
+      <div class="scale-items">
+        <div class="scale-item"><span class="dot dot-green"></span> Clean (0–20%)</div>
+        <div class="scale-item"><span class="dot dot-yellow"></span> Mild (20–40%)</div>
+        <div class="scale-item"><span class="dot dot-orange"></span> Moderate (40–60%)</div>
+        <div class="scale-item"><span class="dot dot-red"></span> Toxic (60–80%)</div>
+        <div class="scale-item"><span class="dot dot-dark"></span> Extreme (80–100%)</div>
+      </div>
+    </div>
+
+    <a href="{{ url_for('analytics') }}" class="sidebar-card sidebar-analytics-link">
+      <h4 class="sidebar-title">📈 View Analytics →</h4>
+      <p class="sidebar-analytics-sub">Platform-wide toxicity stats</p>
+    </a>
+  </div>
+
+</div>
+
+{% endblock %}

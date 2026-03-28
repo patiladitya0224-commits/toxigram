@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}New Post{% endblock %}
+{% block content %}
+
+<div class="centered-form-page">
+  <div class="form-card">
+    <h2 class="form-title">📸 Create a Post</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="auth-form">
+
+      <div class="form-group">
+        <label>Upload Image (optional)</label>
+        <div class="file-upload-area" id="upload-area">
+          <input type="file" name="image" accept="image/*" id="image-input" class="file-input" onchange="previewImage(this)"/>
+          <div class="upload-placeholder" id="upload-placeholder">
+            <div class="upload-icon">🖼️</div>
+            <p>Click to upload or drag & drop</p>
+            <small>PNG, JPG, GIF up to 16MB</small>
+          </div>
+          <img id="image-preview" class="image-preview" style="display:none"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Caption</label>
+        <textarea name="caption" placeholder="Write a caption…" class="form-input form-textarea" rows="4" required></textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('index') }}" class="btn-ghost">Cancel</a>
+        <button type="submit" class="btn-primary">Share Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function previewImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('image-preview').src = e.target.result;
+    document.getElementById('image-preview').style.display = 'block';
+    document.getElementById('upload-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+
+{% endblock %}

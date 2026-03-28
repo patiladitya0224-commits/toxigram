@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+
+<div class="analytics-page">
+  <div class="analytics-header">
+    <h2>📊 Platform Toxicity Analytics</h2>
+    <p>NLP-powered insights across all comments</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="analytics-grid">
+    <div class="analytics-card">
+      <div class="analytics-icon">💬</div>
+      <div class="analytics-num">{{ total_comments }}</div>
+      <div class="analytics-lbl">Total Comments</div>
+    </div>
+    <div class="analytics-card analytics-card-red">
+      <div class="analytics-icon">☣️</div>
+      <div class="analytics-num">{{ toxic_comments }}</div>
+      <div class="analytics-lbl">Toxic Comments</div>
+    </div>
+    <div class="analytics-card analytics-card-green">
+      <div class="analytics-icon">🔄</div>
+      <div class="analytics-num">{{ neutralized }}</div>
+      <div class="analytics-lbl">Neutralized</div>
+    </div>
+    <div class="analytics-card analytics-card-blue">
+      <div class="analytics-icon">📈</div>
+      <div class="analytics-num">{{ avg_score }}%</div>
+      <div class="analytics-lbl">Avg. Toxicity</div>
+    </div>
+  </div>
+
+  <!-- Platform health bar -->
+  <div class="health-bar-card">
+    <h3>Platform Health</h3>
+    <div class="health-bar-track">
+      <div class="health-bar-fill" style="width: {{ 100 - avg_score }}%"></div>
+    </div>
+    <div class="health-bar-labels">
+      <span>Toxic</span>
+      <span>🌟 Health: {{ 100 - avg_score|int }}%</span>
+      <span>Clean</span>
+    </div>
+  </div>
+
+  <!-- Toxicity Scale Legend -->
+  <div class="legend-card">
+    <h3>🎨 Toxicity Level Guide</h3>
+    <div class="legend-bars">
+      <div class="legend-row">
+        <span class="legend-label">Clean (0–20%)</span>
+        <div class="legend-bar" style="width:20%;background:#22c55e"></div>
+      </div>
+      <div class="legend-row">
+        <span class="legend-label">Mild (20–40%)</span>
+        <div class="legend-bar" style="width:40%;background:#eab308"></div>
+      </div>
+      <div class="legend-row">
+        <span class="legend-label">Moderate (40–60%)</span>
+        <div class="legend-bar" style="width:60%;background:#f97316"></div>
+      </div>
+      <div class="legend-row">
+        <span class="legend-label">Toxic (60–80%)</span>
+        <div class="legend-bar" style="width:80%;background:#ef4444"></div>
+      </div>
+      <div class="legend-row">
+        <span class="legend-label">Extreme (80–100%)</span>
+        <div class="legend-bar" style="width:100%;background:#7f1d1d"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Events -->
+  {% if recent_logs %}
+  <div class="recent-events-card">
+    <h3>🚨 Recent Toxicity Events</h3>
+    <table class="events-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Score</th>
+          <th>Level</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in recent_logs %}
+        <tr>
+          <td>User #{{ log.user_id }}</td>
+          <td>{{ (log.toxicity_score * 100)|int }}%</td>
+          <td>
+            <span class="tox-badge
+              {% if log.toxicity_score < 0.2 %}tox-clean
+              {% elif log.toxicity_score < 0.4 %}tox-mild
+              {% elif log.toxicity_score < 0.6 %}tox-moderate
+              {% elif log.toxicity_score < 0.8 %}tox-toxic
+              {% else %}tox-extreme{% endif %}">
+              {% if log.toxicity_score < 0.2 %}Clean
+              {% elif log.toxicity_score < 0.4 %}Mild
+              {% elif log.toxicity_score < 0.6 %}Moderate
+              {% elif log.toxicity_score < 0.8 %}Toxic
+              {% else %}Extreme{% endif %}
+            </span>
+          </td>
+          <td>{{ log.created_at.strftime('%b %d, %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ToxiGram - Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #0a0a0a; color: #f0f0f0; min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+    .left { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); display: flex; align-items: center; justify-content: center; padding: 48px; min-height: 100vh; }
+    .left-inner { max-width: 380px; }
+    .bolt { font-size: 3rem; margin-bottom: 16px; display: block; }
+    .brand { font-family: 'DM Serif Display', serif; font-size: 3.5rem; color: #fff; line-height: 1; margin-bottom: 18px; }
+    .tagline { font-size: 1.1rem; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 32px; }
+    .features { display: flex; flex-direction: column; gap: 12px; }
+    .feat { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+    .feat-dot { width: 8px; height: 8px; border-radius: 50%; background: #6366f1; flex-shrink: 0; }
+    .right { display: flex; align-items: center; justify-content: center; padding: 48px; background: #0a0a0a; min-height: 100vh; }
+    .card { width: 100%; max-width: 400px; }
+    .card-brand { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: #f0f0f0; margin-bottom: 32px; display: flex; align-items: center; gap: 8px; }
+    .card-brand span { color: #f97316; }
+    h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 6px; }
+    .sub { color: #606060; font-size: 0.9rem; margin-bottom: 28px; }
+    .flash { background: #2d1a1a; border: 1px solid #ef4444; color: #fca5a5; padding: 12px 16px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 18px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: #a0a0a0; margin-bottom: 6px; letter-spacing: 0.03em; text-transform: uppercase; }
+    input { width: 100%; background: #111111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 13px 16px; color: #f0f0f0; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: #6366f1; }
+    input::placeholder { color: #404040; }
+    .btn { width: 100%; background: #6366f1; color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 8px; transition: background 0.2s; }
+    .btn:hover { background: #4f46e5; }
+    .divider { border: none; border-top: 1px solid #1a1a1a; margin: 24px 0; }
+    .switch { text-align: center; font-size: 0.88rem; color: #606060; }
+    .switch a { color: #818cf8; text-decoration: none; font-weight: 600; }
+    @media (max-width: 768px) { body { grid-template-columns: 1fr; } .left { display: none; } .right { padding: 32px 24px; } }
+  </style>
+</head>
+<body>
+<div class="left">
+  <div class="left-inner">
+    <span class="bolt">&#x26A1;</span>
+    <div class="brand">ToxiGram</div>
+    <p class="tagline">Join the cleanest social platform ever built.</p>
+    <div class="features">
+      <div class="feat"><div class="feat-dot"></div> Auto-detects toxic comments instantly</div>
+      <div class="feat"><div class="feat-dot"></div> Replaces bad words with kind alternatives</div>
+      <div class="feat"><div class="feat-dot"></div> Shows real-time toxicity score as you type</div>
+      <div class="feat"><div class="feat-dot"></div> Sentiment analysis on every post's comments</div>
+      <div class="feat"><div class="feat-dot"></div> Platform analytics dashboard</div>
+    </div>
+  </div>
+</div>
+<div class="right">
+  <div class="card">
+    <div class="card-brand"><span>&#x26A1;</span> ToxiGram</div>
+    <h2>Create account</h2>
+    <p class="sub">Start your clean social journey</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for cat, msg in messages %}<div class="flash">{{ msg }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+    <form method="POST">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="cool_username" required autofocus/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="you@email.com" required/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Choose a strong password" required/>
+      </div>
+      <button type="submit" class="btn">Create Account</button>
+    </form>
+    <hr class="divider"/>
+    <p class="switch">Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }}{% endblock %}
+{% block content %}
+
+<div class="profile-page">
+
+  <!-- Profile Header -->
+  <div class="profile-header-card">
+    <div class="profile-avatar-xl">{{ profile_user.username[0].upper() }}</div>
+    <div class="profile-info">
+      <h2 class="profile-username">{{ profile_user.username }}</h2>
+      <p class="profile-bio">{{ profile_user.bio or 'No bio yet.' }}</p>
+      <div class="profile-stats">
+        <div class="stat-item">
+          <div class="stat-num">{{ posts|length }}</div>
+          <div class="stat-lbl">Posts</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">{{ total_comments }}</div>
+          <div class="stat-lbl">Comments</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">{{ modified_count }}</div>
+          <div class="stat-lbl">Neutralized</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NLP Stats Card -->
+  <div class="nlp-stats-card">
+    <h3 class="nlp-stats-title">🧠 Comment Toxicity Profile</h3>
+    <div class="nlp-stats-grid">
+      <div class="nlp-stat">
+        <div class="nlp-stat-num {% if avg_toxicity < 20 %}color-green{% elif avg_toxicity < 40 %}color-yellow{% elif avg_toxicity < 60 %}color-orange{% else %}color-red{% endif %}">
+          {{ avg_toxicity }}%
+        </div>
+        <div class="nlp-stat-lbl">Avg. Toxicity</div>
+      </div>
+      <div class="nlp-stat">
+        <div class="nlp-stat-num">{{ modified_count }}</div>
+        <div class="nlp-stat-lbl">Comments Fixed</div>
+      </div>
+      <div class="nlp-stat">
+        <div class="nlp-stat-num">{{ total_comments }}</div>
+        <div class="nlp-stat-lbl">Total Comments</div>
+      </div>
+    </div>
+
+    <!-- Avg toxicity visual bar -->
+    <div class="profile-tox-bar">
+      <div class="profile-tox-label">Overall Toxicity Level</div>
+      <div class="tox-bar-track" style="height:12px;">
+        <div class="tox-bar-fill" style="width:{{ avg_toxicity }}%;
+          background: {% if avg_toxicity < 20 %}#22c55e
+          {% elif avg_toxicity < 40 %}#eab308
+          {% elif avg_toxicity < 60 %}#f97316
+          {% elif avg_toxicity < 80 %}#ef4444
+          {% else %}#7f1d1d{% endif %}; height:12px; border-radius:6px;">
+        </div>
+      </div>
+      <div class="tox-bar-ends">
+        <span>Clean</span><span>Extreme</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Posts Grid -->
+  <h3 class="posts-grid-title">Posts</h3>
+  {% if posts %}
+  <div class="posts-grid">
+    {% for post in posts %}
+    <a href="{{ url_for('view_post', post_id=post.id) }}" class="grid-post">
+      {% if post.image %}
+      <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="post" class="grid-post-img"/>
+      {% else %}
+      <div class="grid-post-text-card">
+        <p>{{ post.caption[:80] }}{% if post.caption|length > 80 %}…{% endif %}</p>
+      </div>
+      {% endif %}
+      <div class="grid-post-overlay">
+        ❤️ {{ post.like_count }} &nbsp; 💬 {{ post.comment_count }}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>No posts yet.</p>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}
